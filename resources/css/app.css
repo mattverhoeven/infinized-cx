@@ -1,0 +1,731 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+    `inline` is the most load-bearing word in this file.
+
+    Every semantic token below is an alias: `--color-foreground: var(--foreground)`,
+    where `--foreground` is the thing `:root` and `.dark` actually flip. Without
+    `inline`, Tailwind emits the alias into `:root` and points utilities at it —
+    `.text-foreground { color: var(--color-foreground) }`. The alias then resolves
+    once, in `:root`, to the light value, and *inherits* as that resolved colour.
+    A `dark` class deeper in the tree still moves `--foreground`, but nothing
+    re-reads it, so `text-foreground` inside a nested dark band renders near-black
+    on near-black. All 33 semantic tokens fail that way together.
+
+    With `inline`, the utility carries the base variable instead —
+    `.text-foreground { color: var(--foreground) }` — so substitution happens on
+    the element being painted, where a scoped `.dark` has already had its say.
+    That is what makes an inverted band, a styleguide frame showing both themes
+    side by side, and a per-element token override (the chat bubble's
+    `[--primary-foreground:currentcolor]`) work at all.
+
+    The cost: `inline` also means these names are no longer emitted as CSS
+    variables, so hand-written CSS cannot read `var(--color-foreground)`. Read the
+    base variable (`var(--foreground)`) or, for a literal like the font stack,
+    `--theme(--font-sans)`.
+*/
+@theme inline {
+    --font-sans:
+        'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display:
+        'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    /*
+        Typography scale. Six steps, each with its own line-height, tracking
+        and weight so a heading never needs three extra utility classes to
+        look right. `display` is reserved for page-level heroes, `title` is
+        the PageHeader default, `heading` is section level, and
+        body/label/caption cover everything below it.
+    */
+    --text-display: 2rem;
+    --text-display--line-height: 1.15;
+    --text-display--letter-spacing: -0.022em;
+    --text-display--font-weight: 600;
+
+    --text-title: 1.375rem;
+    --text-title--line-height: 1.25;
+    --text-title--letter-spacing: -0.018em;
+    --text-title--font-weight: 600;
+
+    --text-heading: 1.0625rem;
+    --text-heading--line-height: 1.35;
+    --text-heading--letter-spacing: -0.011em;
+    --text-heading--font-weight: 600;
+
+    --text-body: 0.875rem;
+    --text-body--line-height: 1.6;
+    --text-body--letter-spacing: 0em;
+    --text-body--font-weight: 400;
+
+    --text-label: 0.8125rem;
+    --text-label--line-height: 1.4;
+    --text-label--letter-spacing: 0em;
+    --text-label--font-weight: 500;
+
+    --text-caption: 0.75rem;
+    --text-caption--line-height: 1.45;
+    --text-caption--letter-spacing: 0.004em;
+    --text-caption--font-weight: 400;
+
+    /*
+        Elevation scale. The concrete shadow values live on `--elevation-*` in
+        `:root` / `.dark` so a surface can cast a soft shadow in light mode and
+        lean on a lifted background plus a crisper ring in dark mode.
+    */
+    --shadow-raised: var(--elevation-raised);
+    --shadow-overlay: var(--elevation-overlay);
+    --shadow-popover: var(--elevation-popover);
+
+    /*
+        Motion. `--ease-out` overrides Tailwind's default so every transition
+        in the app decelerates the same way; `--ease-spring` overshoots
+        slightly and is reserved for enter animations.
+    */
+    --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    /*
+        Surface ladder, deepest to highest: `well` → `sunken` → `canvas` →
+        `raised` → `overlay`. `canvas` is the page, `raised` sits on top of it
+        (cards, panels), `overlay` sits on top of that (dialogs, popovers,
+        menus), `sunken` recesses below the canvas (wells, table headers) and
+        `well` is one step below that, for an inset *inside* something already
+        sunken — a code block in a tool result, where `sunken` has nowhere
+        deeper to go and reaching for `canvas` flips the hierarchy.
+
+        `well` is not a general background. If the thing you are placing it in
+        is not itself sunken, you want `sunken` or a card, not a fourth way to
+        draw a container.
+
+        Because the steps carry real lightness contrast, a border is now
+        reinforcement rather than the only thing making a container exist.
+    */
+    --color-surface-canvas: var(--surface-canvas);
+    --color-surface-raised: var(--surface-raised);
+    --color-surface-overlay: var(--surface-overlay);
+    --color-surface-sunken: var(--surface-sunken);
+    --color-surface-well: var(--surface-well);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary-hover: var(--primary-hover);
+    --color-primary-subtle: var(--primary-subtle);
+    --color-primary-subtle-foreground: var(--primary-subtle-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-info: var(--info);
+    --color-info-foreground: var(--info-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    /*
+        The official brand palette, as literal delivered values rather than
+        theme-aware tokens: a logo does not recolour itself per theme. The mark
+        is two interlocking arcs in a duotone pair — `mark-primary` is the
+        lower-left arc, `mark-secondary` the lighter upper-right one — and
+        `ink` is the near-black the wordmark is set in. Anything drawing the
+        mark reaches for these instead of repeating the hex.
+
+        `mark-primary` is also the source of `--primary`: #4F49DF measures as
+        oklch(0.51 0.22 277), which is where hue 277 below comes from.
+    */
+    --color-brand-mark-primary: #4f49df;
+    --color-brand-mark-secondary: #6d74f5;
+    --color-brand-ink: #0b0b14;
+
+    /*
+        Near-black canvas behind wallboard / mission-control glass panels. It
+        resolves to the brand ink so the darkest surface in the app is the
+        brand's own black rather than a separate near-black.
+    */
+    --color-wallboard-canvas: var(--color-brand-ink);
+
+    /*
+        Paper. Not a step on the surface ladder and deliberately not themed:
+        this is a picture of a printed page, and a generated DOCX or PDF is
+        white paper with dark ink whether the reader has dark mode on or not.
+        A document preview on `bg-card` claimed the opposite — in dark mode it
+        showed a dark page, which is why brand-ink headings looked broken there
+        and why the preview could hide an accent colour that is unreadable in
+        the real export.
+
+        Both values are literal, mirroring `ArtifactDocumentStyles`: the page is
+        white (`#fcfcfd` is already spoken for there as the zebra tint sitting
+        *on* the paper) and `paper-ink` is its `COLOR_TEXT`. Tint over paper
+        with an alpha of the ink — `paper-ink/70` lands within a hair of the
+        document's own `COLOR_MUTED`, and `/15` of its `COLOR_BORDER` — since
+        compositing over a fixed white is predictable in a way that alpha over
+        a themed surface is not.
+
+        What this pair guarantees: paper stays paper in both themes, and the ink
+        reads on it. What it cannot guarantee: that a customer's accent colour
+        is legible on paper. That contrast is the customer's choice — the point
+        is that the preview now shows it honestly instead of flattering it.
+    */
+    --color-paper: #ffffff;
+    --color-paper-ink: #1e293b;
+}
+
+:root {
+    /*
+        Every neutral carries a trace of the brand hue (277 — the measured hue
+        of the brand indigo #4F49DF). The primary sits at chroma 0.22; pairing
+        it with pure-grey neutrals is what made the app read as a generic
+        template. Dark mode already did this — light mode now matches it.
+    */
+    --surface-canvas: oklch(0.985 0.003 277);
+    --surface-raised: oklch(1 0 0);
+    --surface-overlay: oklch(1 0 0);
+    --surface-sunken: oklch(0.965 0.005 277);
+    /*
+        Deeper means darker here, and the inks are calibrated for a near-white
+        canvas, so the deepest step is where light mode runs out of contrast
+        first: it takes the same 0.020 as canvas → sunken and no more. That
+        keeps both neutral inks and the diff colours (`success`, `destructive`)
+        above AA on it. `text-info` is the one semantic that does not clear AA
+        this deep — it is already at its floor on the canvas — so status text
+        belongs a step up.
+    */
+    --surface-well: oklch(0.945 0.007 277);
+
+    --background: var(--surface-canvas);
+    --foreground: oklch(0.16 0.012 277);
+    --card: var(--surface-raised);
+    --card-foreground: var(--foreground);
+    --popover: var(--surface-overlay);
+    --popover-foreground: var(--foreground);
+    --primary: oklch(0.51 0.22 277);
+    --primary-foreground: oklch(0.99 0.002 277);
+    --primary-hover: oklch(0.44 0.2 277);
+    --primary-subtle: oklch(0.955 0.022 277);
+    --primary-subtle-foreground: oklch(0.42 0.19 277);
+    --secondary: oklch(0.962 0.005 277);
+    --secondary-foreground: oklch(0.24 0.014 277);
+    --muted: oklch(0.962 0.005 277);
+    --muted-foreground: oklch(0.505 0.014 277);
+    --accent: oklch(0.955 0.022 277);
+    --accent-foreground: oklch(0.42 0.19 277);
+    --destructive: oklch(0.55 0.21 27.325);
+    --destructive-foreground: oklch(0.99 0.002 277);
+    /*
+        Light-mode semantics are all dark enough to (a) carry white text as a
+        fill and (b) pass AA as text on the canvas. That is why `warning` is a
+        deep amber rather than the usual mid-tone one: an amber light enough to
+        look "yellow" cannot reach 4.5:1 against a near-white background, and
+        the app uses `text-warning` as freely as `bg-warning`.
+    */
+    --success: oklch(0.48 0.13 155);
+    --success-foreground: oklch(0.99 0.002 277);
+    --warning: oklch(0.52 0.135 62);
+    --warning-foreground: oklch(0.99 0.002 277);
+    --info: oklch(0.53 0.16 245);
+    --info-foreground: oklch(0.99 0.002 277);
+    --border: oklch(0.915 0.006 277);
+    --input: oklch(0.905 0.007 277);
+    --ring: oklch(0.51 0.22 277);
+    --chart-1: oklch(0.51 0.22 277);
+    --chart-2: oklch(0.6 0.118 184.704);
+    --chart-3: oklch(0.646 0.222 41.116);
+    --chart-4: oklch(0.62 0.19 303.9);
+    --chart-5: oklch(0.72 0.15 70);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.972 0.005 277);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: oklch(0.51 0.22 277);
+    --sidebar-primary-foreground: oklch(0.99 0.002 277);
+    --sidebar-accent: oklch(0.955 0.022 277);
+    --sidebar-accent-foreground: oklch(0.42 0.19 277);
+    --sidebar-border: oklch(0.915 0.006 277);
+    --sidebar-ring: oklch(0.51 0.22 277);
+
+    /* Light mode can afford real shadows; they carry most of the elevation. */
+    --elevation-raised:
+        0 1px 2px -1px oklch(0.16 0.03 277 / 0.07),
+        0 2px 6px -2px oklch(0.16 0.03 277 / 0.05);
+    --elevation-overlay:
+        0 2px 4px -2px oklch(0.16 0.03 277 / 0.08),
+        0 8px 20px -6px oklch(0.16 0.03 277 / 0.1);
+    --elevation-popover:
+        0 4px 8px -4px oklch(0.16 0.03 277 / 0.1),
+        0 16px 40px -12px oklch(0.16 0.03 277 / 0.16);
+}
+
+.dark {
+    --surface-canvas: oklch(0.15 0.012 277);
+    --surface-raised: oklch(0.185 0.014 277);
+    --surface-overlay: oklch(0.215 0.016 277);
+    --surface-sunken: oklch(0.125 0.011 277);
+    /*
+        Dark mode has less headroom below `sunken` than light mode has above it:
+        the step has to stay clear of black or the deepest inset stops being a
+        surface at all. 0.02 is the widest it can be without the code block
+        reading as a hole.
+    */
+    --surface-well: oklch(0.105 0.01 277);
+
+    --background: var(--surface-canvas);
+    --foreground: oklch(0.985 0.004 277);
+    --card: var(--surface-raised);
+    --card-foreground: var(--foreground);
+    --popover: var(--surface-overlay);
+    --popover-foreground: var(--foreground);
+    --primary: oklch(0.62 0.19 277);
+    --primary-foreground: oklch(0.16 0.03 277);
+    --primary-hover: oklch(0.68 0.17 277);
+    --primary-subtle: oklch(0.28 0.055 277);
+    --primary-subtle-foreground: oklch(0.86 0.07 277);
+    --secondary: oklch(0.27 0.016 277);
+    --secondary-foreground: oklch(0.985 0.002 277);
+    --muted: oklch(0.27 0.016 277);
+    --muted-foreground: oklch(0.72 0.013 277);
+    --accent: oklch(0.31 0.055 277);
+    --accent-foreground: oklch(0.95 0.02 277);
+    --destructive: oklch(0.62 0.2 25.723);
+    --destructive-foreground: oklch(0.16 0.03 277);
+    --success: oklch(0.74 0.14 160);
+    --success-foreground: oklch(0.2 0.04 160);
+    --warning: oklch(0.8 0.14 80);
+    --warning-foreground: oklch(0.25 0.06 80);
+    --info: oklch(0.7 0.14 245);
+    --info-foreground: oklch(0.18 0.05 245);
+    --border: oklch(0.285 0.016 277);
+    --input: oklch(0.31 0.017 277);
+    --ring: oklch(0.62 0.19 277);
+    --chart-1: oklch(0.62 0.19 277);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.7 0.2 303.9);
+    --chart-5: oklch(0.7 0.2 16.439);
+    --sidebar: oklch(0.17 0.013 277);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: oklch(0.62 0.19 277);
+    --sidebar-primary-foreground: oklch(0.16 0.03 277);
+    --sidebar-accent: oklch(0.31 0.055 277);
+    --sidebar-accent-foreground: oklch(0.95 0.02 277);
+    --sidebar-border: oklch(0.285 0.016 277);
+    --sidebar-ring: oklch(0.62 0.19 277);
+
+    /*
+        Shadows barely read on a dark canvas, so dark mode gets its elevation
+        from the surface steps plus a hairline top highlight, with only a faint
+        drop shadow to seat overlays.
+    */
+    --elevation-raised: 0 1px 0 0 oklch(1 0 0 / 0.04) inset;
+    --elevation-overlay:
+        0 1px 0 0 oklch(1 0 0 / 0.05) inset, 0 8px 24px -8px oklch(0 0 0 / 0.6);
+    --elevation-popover:
+        0 1px 0 0 oklch(1 0 0 / 0.06) inset,
+        0 16px 44px -12px oklch(0 0 0 / 0.75);
+}
+
+/*
+    Tenant-branded data marks. A module that carries a workspace's own numbers
+    may repaint the first chart series in that workspace's accent — the tenant
+    colours the data, the platform keeps the chrome. The wrapper sets one
+    derived colour per theme (clamped into the readable band by
+    lib/brand-series.ts); these rules only decide which of the two feeds the
+    token, so every chart primitive stays on var(--chart-1) and never learns
+    branding exists.
+*/
+[data-brand-series] {
+    --chart-1: var(--brand-series-light);
+}
+
+.dark [data-brand-series] {
+    --chart-1: var(--brand-series-dark);
+}
+
+/*
+    Density. `comfortable` is the default; `compact` tightens padding, gaps and
+    control heights without touching the type scale, so operators who live in
+    the task and observability lists can fit more on screen. Driven by
+    `data-density` on <html> (see `use-density.tsx`).
+*/
+:root,
+[data-density='comfortable'] {
+    --density-pad-sm: 0.75rem;
+    --density-pad-md: 1.25rem;
+    --density-pad-lg: 1.75rem;
+    --density-gap: 1.5rem;
+    --density-gap-sm: 0.75rem;
+    --density-row-y: 0.75rem;
+    --density-control-h: 2.25rem;
+}
+
+[data-density='compact'] {
+    --density-pad-sm: 0.5rem;
+    --density-pad-md: 0.875rem;
+    --density-pad-lg: 1.25rem;
+    --density-gap: 1rem;
+    --density-gap-sm: 0.5rem;
+    --density-row-y: 0.4375rem;
+    --density-control-h: 2rem;
+}
+
+:root {
+    --duration-fast: 120ms;
+    --duration-base: 200ms;
+    --duration-slow: 320ms;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-feature-settings:
+            'cv02' 1,
+            'cv03' 1,
+            'cv04' 1,
+            'cv11' 1;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        @apply tracking-tight text-balance;
+    }
+}
+
+/*
+    Motion utilities on top of the duration tokens. Tailwind v4 has no
+    `--duration-*` theme namespace, so these are declared explicitly instead of
+    scattering `duration-[200ms]` through the codebase.
+*/
+/*
+    Site (marketing) motion and brand surfaces.
+
+    The two gradients are the brand identity itself, not a themeable surface:
+    white text sits on them, so they must not lighten with the dark theme the
+    way `--primary` does. Same reason the human avatar gradient is fixed — it
+    is the "person" colour across every demo, in both themes.
+*/
+@utility bg-brand-gradient {
+    background-image: linear-gradient(180deg, #6d74f5, #4f49df);
+}
+@utility bg-brand-gradient-diag {
+    background-image: linear-gradient(135deg, #6d74f5, #4f49df);
+}
+@utility bg-human-gradient {
+    background-image: linear-gradient(135deg, #ffb86b, #ff7a59);
+}
+@utility text-human-foreground {
+    color: #3b1d0c;
+}
+
+/* A light pulse travelling along a path with `pathLength="1000"`. */
+@keyframes site-sweep {
+    to {
+        stroke-dashoffset: -1000;
+    }
+}
+/* Slow rotation for the dashed rings around the mark. */
+@keyframes site-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+/* Gradient text that drifts; pair with `background-size: 200% 100%`. */
+@keyframes site-shimmer {
+    to {
+        background-position: 200% 0;
+    }
+}
+/* The heartbeat on "Made in the Netherlands". */
+@keyframes site-beat {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    14% {
+        transform: scale(1.18);
+    }
+    28% {
+        transform: scale(1);
+    }
+    42% {
+        transform: scale(1.12);
+    }
+    56% {
+        transform: scale(1);
+    }
+}
+/* A row arriving at the top of a live feed. */
+@keyframes site-feed-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+/* A tile popping into a grid. */
+@keyframes site-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.4);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+/* A node rising into a tree or chart. */
+@keyframes site-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+/* An SVG path drawing itself; pair with `pathLength="1"`. */
+@keyframes site-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+/* A bar growing to `--w`. */
+@keyframes site-grow {
+    to {
+        width: var(--w);
+    }
+}
+
+/* Progress rail under the active step in the site's "how it works" stepper. */
+@keyframes site-progress {
+    from {
+        width: 0%;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+/*
+    Slow attention pulse for the workspace-alerts header icon. ~0.4 Hz so it
+    is noticeable without flashing. `prefers-reduced-motion` collapses this
+    via the global contract below and `motion-reduce:animate-none`.
+*/
+@keyframes workspace-alert-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.45;
+    }
+}
+
+@utility animate-workspace-alert {
+    animation: workspace-alert-pulse 2.4s var(--ease-out) infinite;
+}
+
+/*
+    The typing dots. A wave of opacity and a hair of lift rather than a bounce:
+    Tailwind's `animate-bounce` throws each dot a quarter of its own height,
+    which beside arriving text reads as something juddering rather than as
+    somebody typing. Collapsed by the reduced-motion contract below.
+*/
+@keyframes typing-dot {
+    0%,
+    80%,
+    100% {
+        opacity: 0.35;
+        transform: translateY(0);
+    }
+    40% {
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+}
+
+@utility animate-typing-dot {
+    animation: typing-dot 1.2s var(--ease-out) infinite;
+}
+
+/*
+    A text caret, not a pulsing dot. `animate-pulse` eases opacity over two
+    seconds, which beside arriving characters reads as something fading in and
+    out rather than as the place the next letter lands. Real carets blink hard,
+    a little over once a second. Collapsed by the reduced-motion contract, and
+    the caret itself stays visible when it is.
+*/
+@keyframes caret-blink {
+    0%,
+    49% {
+        opacity: 1;
+    }
+    50%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@utility animate-caret {
+    animation: caret-blink 1.06s steps(1, end) infinite;
+}
+
+/*
+    The mark's two arcs while a screen is being fetched. They are one chain, so
+    they breathe in turn rather than spinning: a rotating logo is a spinner
+    wearing a costume, while a chain that passes light between its halves is
+    the mark doing what it already means.
+*/
+@keyframes brand-arc {
+    0%,
+    100% {
+        opacity: 0.28;
+        transform: translateY(0);
+    }
+    45% {
+        opacity: 1;
+        transform: translateY(-1.5%);
+    }
+}
+
+@utility animate-brand-arc {
+    animation: brand-arc 1.4s var(--ease-out) infinite;
+}
+
+@utility duration-fast {
+    transition-duration: var(--duration-fast);
+}
+
+@utility duration-base {
+    transition-duration: var(--duration-base);
+}
+
+@utility duration-slow {
+    transition-duration: var(--duration-slow);
+}
+
+/*
+    One global reduced-motion contract instead of per-component `motion-reduce:`
+    variants that are easy to forget. Anything whose animation carries meaning
+    rather than polish opts back in with `data-motion="essential"`; spinners are
+    exempt by class so inline `animate-spin` loaders keep turning too.
+*/
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --duration-fast: 1ms;
+        --duration-base: 1ms;
+        --duration-slow: 1ms;
+    }
+
+    *:not([data-motion='essential'], .animate-spin),
+    *:not([data-motion='essential'], .animate-spin)::before,
+    *:not([data-motion='essential'], .animate-spin)::after {
+        animation-duration: 1ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+        transition-delay: 0ms !important;
+    }
+
+    html {
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Chat markdown rendering */
+.chat-markdown p + p {
+    margin-top: 0.5rem;
+}
+
+.chat-mention {
+    display: inline;
+    border-radius: 0.375rem;
+    background-color: color-mix(in oklab, var(--primary) 14%, transparent);
+    padding: 0.1rem 0.35rem;
+    font-weight: 600;
+    color: var(--primary);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+/*
+   Own bubbles are a tint of the accent, so the regular mention chip would
+   sink into them. A hairline keeps it reading as a chip on the tint.
+*/
+.chat-bubble-own .chat-mention {
+    background-color: color-mix(
+        in oklab,
+        var(--primary) 18%,
+        var(--surface-raised)
+    );
+    box-shadow: inset 0 0 0 1px
+        color-mix(in oklab, var(--primary) 28%, transparent);
+}
+
+
+/* Shiki dual-theme code blocks: apply the dark palette in dark mode. */
+.dark .chat-code-block .shiki,
+.dark .chat-code-block .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+}
